@@ -194,7 +194,7 @@ export function EmployerPayrollCenter() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="w-5 h-5" />
-                {selectedWorkerData.name}'s Financial Details
+                Financial Details
               </CardTitle>
               <Button size="sm" onClick={() => setShowAddAction(true)} className="gap-2">
                 <Plus className="w-4 h-4" />
@@ -209,9 +209,7 @@ export function EmployerPayrollCenter() {
                   <div>
                     <p className="text-gray-600 text-sm">Total Salary</p>
                     <p className="text-3xl font-bold text-gray-900">${selectedWorkerData.totalSalary}</p>
-                    <p className="text-gray-500 text-xs mt-1">Total earnings</p>
                   </div>
-                  <DollarSign className="w-12 h-12 text-purple-500" />
                 </div>
               </div>
 
@@ -221,9 +219,7 @@ export function EmployerPayrollCenter() {
                   <div>
                     <p className="text-gray-600 text-sm">Paid Salary</p>
                     <p className="text-3xl font-bold text-gray-900">${selectedWorkerData.paidSalary}</p>
-                    <p className="text-gray-500 text-xs mt-1">Actually paid</p>
                   </div>
-                  <TrendingUp className="w-12 h-12 text-green-500" />
                 </div>
               </div>
 
@@ -233,9 +229,7 @@ export function EmployerPayrollCenter() {
                   <div>
                     <p className="text-gray-600 text-sm">Loans</p>
                     <p className="text-3xl font-bold text-gray-900">${selectedWorkerData.loans}</p>
-                    <p className="text-gray-500 text-xs mt-1">Outstanding amount</p>
                   </div>
-                  <Clock className="w-12 h-12 text-orange-500" />
                 </div>
               </div>
 
@@ -245,9 +239,7 @@ export function EmployerPayrollCenter() {
                   <div>
                     <p className="text-gray-600 text-sm">Deductions</p>
                     <p className="text-3xl font-bold text-gray-900">${selectedWorkerData.deductions}</p>
-                    <p className="text-gray-500 text-xs mt-1">Total deducted</p>
                   </div>
-                  <TrendingDown className="w-12 h-12 text-red-500" />
                 </div>
               </div>
             </div>
@@ -263,21 +255,13 @@ export function EmployerPayrollCenter() {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <p className="font-medium text-gray-800">{action.reason}</p>
-                          <Badge className={getActionColor(action.type)}>{getActionTypeLabel(action.type)}</Badge>
+
                         </div>
                         <p className="text-sm text-gray-600">{action.date}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold text-gray-900">${action.amount}</p>
-                        <Badge
-                          className={
-                            action.status === "approved"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }
-                        >
-                          {action.status === "approved" ? "Approved" : "Pending"}
-                        </Badge>
+                        <Badge className={getActionColor(action.type)}>{getActionTypeLabel(action.type)}</Badge>
                       </div>
                     </div>
                   ))}

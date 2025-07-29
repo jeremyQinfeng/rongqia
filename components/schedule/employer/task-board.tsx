@@ -326,7 +326,7 @@ export function EmployerTaskBoard() {
               key={task.id}
               className="p-4 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-100 hover:shadow-md transition-all duration-200"
             >
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold text-gray-900">{task.title}</h3>
@@ -334,7 +334,7 @@ export function EmployerTaskBoard() {
                   <p className="text-sm text-gray-600 mb-2">{task.description}</p>
                   <div className="flex items-center gap-4 text-xs text-gray-500"></div>
                 </div>
-                <div className="text-right ml-4">
+                <div className="text-right mt-2 md:mt-0 md:ml-4">
                   <p className="text-xs text-gray-500">Due: {new Date(task.dueDate).toLocaleDateString()}</p>
                   <p className="text-xs text-gray-500">
                     Time: {task.startTime} - {task.endTime}

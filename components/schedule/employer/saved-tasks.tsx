@@ -41,12 +41,18 @@ export function SavedTasks() {
   const [selectedTask, setSelectedTask] = useState<SavedTask | null>(null)
   const [editingTask, setEditingTask] = useState<SavedTask | null>(null)
 
-  const [newSavedTask, setNewSavedTask] = useState({
+  const [newSavedTask, setNewSavedTask] = useState<{
+    title: string;
+    description: string;
+    category: string;
+    estimatedTime: string;
+    priority: SavedTask['priority'];
+  }>({
     title: "",
     description: "",
     category: "",
     estimatedTime: "",
-    priority: "medium" as const,
+    priority: "medium",
   })
 
   const [assignmentData, setAssignmentData] = useState({
@@ -262,7 +268,6 @@ export function SavedTasks() {
           onClick={() => setShowAddSavedTask(true)}
         >
           <Plus className="w-4 h-4" />
-          Add Template
         </Button>
       </div>
 
@@ -310,7 +315,7 @@ export function SavedTasks() {
               className="p-4 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-100 hover:shadow-md transition-all duration-200 animate-fade-in-left"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-semibold text-gray-900">{task.title}</h3>
@@ -323,7 +328,7 @@ export function SavedTasks() {
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 ml-4">
+                <div className="flex items-center gap-2 mt-2 md:mt-0 md:ml-4">
                   <Button
                     size="sm"
                     variant="outline"

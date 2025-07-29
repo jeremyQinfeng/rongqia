@@ -31,7 +31,6 @@ export default function HomePage() {
             </div>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Domestic Helper Management</h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">Professional Household Service Management Platform</p>
         </div>
 
         {/* Role Selection */}
@@ -48,10 +47,6 @@ export default function HomePage() {
               <CardContent className="text-center space-y-4">
                 <p className="text-gray-700 mb-6">Full Management Control</p>
                 <ul className="text-sm text-gray-600 space-y-2 mb-6">
-                  <li>• Schedule & Task Management</li>
-                  <li>• Menu Planning & Approval</li>
-                  <li>• Financial & Payroll Control</li>
-                  <li>• Procurement Oversight</li>
                 </ul>
                 <Button
                   onClick={() => handleRoleSelection("employer")}
@@ -81,10 +76,6 @@ export default function HomePage() {
               <CardContent className="text-center space-y-4">
                 <p className="text-gray-700 mb-6">Efficient Work Execution</p>
                 <ul className="text-sm text-gray-600 space-y-2 mb-6">
-                  <li>• Daily Task Execution</li>
-                  <li>• Menu Implementation</li>
-                  <li>• Financial Overview</li>
-                  <li>• Procurement Requests</li>
                 </ul>
                 <Button
                   onClick={() => handleRoleSelection("worker")}

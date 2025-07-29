@@ -251,12 +251,11 @@ export function EmployerProcurementManagement() {
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">{currentWorker.name}</h3>
-                  <p className="text-sm text-gray-600">Last activity: {currentWorker.lastActivity}</p>
                 </div>
               </div>
               <Button variant="outline" onClick={() => setShowWorkerList(true)} className="gap-2">
                 <Users className="w-4 h-4" />
-                Select Worker
+                Select
                 <ChevronDown className="w-4 h-4" />
               </Button>
             </div>
@@ -298,21 +297,7 @@ export function EmployerProcurementManagement() {
                     {transaction.workerName} • {transaction.date}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant="outline">{transaction.category}</Badge>
-                  <Badge
-                    variant={
-                      transaction.status === "approved"
-                        ? "default"
-                        : transaction.status === "pending"
-                          ? "secondary"
-                          : "destructive"
-                    }
-                  >
-                    {transaction.status}
-                  </Badge>
-                  <span className="font-semibold text-gray-900">${transaction.amount}</span>
-                </div>
+                <span className="font-semibold text-gray-900">${transaction.amount}</span>
               </div>
             ))}
           </div>
