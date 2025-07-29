@@ -164,7 +164,6 @@ export function MenuMain() {
           onClick={() => router.push("/employer/menu/add-dish")}
         >
           <Plus className="w-4 h-4" />
-          Add Dish
         </Button>
       </div>
 

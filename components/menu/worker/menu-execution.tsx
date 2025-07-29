@@ -13,13 +13,14 @@ interface MenuTask {
   id: string
   name: string
   image: string
-  meal: "breakfast" | "lunch" | "dinner"
+  meal: "breakfast" | "lunch" | "dinner" | "other"
   status: "pending" | "completed"
   assignedBy: string
   assignedAt: Date
   description: string
   date: Date
   isUserAdded?: boolean
+  customTime?: string
 }
 
 export function WorkerMenuExecution() {
@@ -74,7 +75,7 @@ export function WorkerMenuExecution() {
     },
   ])
 
-  const getMealLabel = (meal: string) => {
+  const getMealLabel = (meal: string, customTime?: string) => {
     switch (meal) {
       case "breakfast":
         return "Breakfast"
@@ -82,6 +83,8 @@ export function WorkerMenuExecution() {
         return "Lunch"
       case "dinner":
         return "Dinner"
+      case "other":
+        return customTime || "Other"
       default:
         return meal
     }
@@ -95,6 +98,8 @@ export function WorkerMenuExecution() {
         return "bg-blue-100 text-blue-800 border-blue-200"
       case "dinner":
         return "bg-purple-100 text-purple-800 border-purple-200"
+      case "other":
+        return "bg-green-100 text-green-800 border-green-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
     }
@@ -165,6 +170,7 @@ export function WorkerMenuExecution() {
       status: "pending",
       date: selectedDate,
       isUserAdded: true,
+      customTime: dishData.meal === "other" ? dishData.customTime : undefined,
     }
     setMenuTasks((tasks) => [...tasks, newDish])
     setShowAddDish(false)
@@ -265,7 +271,7 @@ export function WorkerMenuExecution() {
 
                       {/* Meal type moved to right corner and highlighted */}
                       <Badge className={`${getMealColor(task.meal)} font-semibold text-sm px-3 py-1 ml-4`}>
-                        {getMealLabel(task.meal)}
+                        {getMealLabel(task.meal, task.customTime)}
                       </Badge>
                     </div>
 
@@ -329,7 +335,7 @@ export function WorkerMenuExecution() {
                   <div className="flex-1">
                     <h3 className="font-medium text-green-800">{task.name}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge className="bg-green-100 text-green-800">{getMealLabel(task.meal)}</Badge>
+                      <Badge className="bg-green-100 text-green-800">{getMealLabel(task.meal, task.customTime)}</Badge>
                       <span className="text-xs text-green-600">• Completed</span>
                       {task.isUserAdded && <span className="text-xs text-green-600">• Self-added</span>}
                     </div>

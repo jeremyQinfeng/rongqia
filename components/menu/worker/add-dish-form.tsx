@@ -17,8 +17,9 @@ interface AddDishFormProps {
   onAddDish: (dishData: {
     name: string
     description: string
-    meal: "breakfast" | "lunch" | "dinner"
+    meal: "breakfast" | "lunch" | "dinner" | "other"
     image?: string
+    customTime?: string
   }) => void
 }
 
@@ -26,8 +27,9 @@ export function WorkerAddDishForm({ isOpen, onClose, onAddDish }: AddDishFormPro
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    meal: "lunch" as "breakfast" | "lunch" | "dinner",
+    meal: "lunch" as "breakfast" | "lunch" | "dinner" | "other",
     image: "",
+    customTime: "",
   })
   const [isAnimating, setIsAnimating] = useState(false)
   const [shouldRender, setShouldRender] = useState(false)
@@ -52,6 +54,7 @@ export function WorkerAddDishForm({ isOpen, onClose, onAddDish }: AddDishFormPro
         description: "",
         meal: "lunch",
         image: "",
+        customTime: "",
       })
     }, 300)
   }
@@ -65,7 +68,10 @@ export function WorkerAddDishForm({ isOpen, onClose, onAddDish }: AddDishFormPro
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.name.trim() && formData.description.trim()) {
-      onAddDish(formData)
+      if (formData.meal === "other" && !formData.customTime.trim()) return
+      const dishData = { ...formData }
+      if (formData.meal !== "other" && "customTime" in dishData) delete (dishData as any).customTime
+      onAddDish(dishData)
       handleClose()
     }
   }
@@ -156,11 +162,11 @@ export function WorkerAddDishForm({ isOpen, onClose, onAddDish }: AddDishFormPro
             <div className="space-y-3">
               <Label className="text-sm font-medium text-gray-700">Meal Type *</Label>
               <div className="flex gap-2">
-                {(["breakfast", "lunch", "dinner"] as const).map((meal) => (
+                {(["breakfast", "lunch", "dinner", "other"] as const).map((meal) => (
                   <button
                     key={meal}
                     type="button"
-                    onClick={() => setFormData({ ...formData, meal })}
+                    onClick={() => setFormData({ ...formData, meal, customTime: meal === "other" ? formData.customTime : "" })}
                     className={cn(
                       "flex-1 py-2 px-3 rounded-lg border-2 transition-all duration-200 text-sm font-medium capitalize",
                       formData.meal === meal
@@ -168,10 +174,22 @@ export function WorkerAddDishForm({ isOpen, onClose, onAddDish }: AddDishFormPro
                         : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100",
                     )}
                   >
-                    {meal}
+                    {meal === "other" ? "其他" : meal}
                   </button>
                 ))}
               </div>
+              {formData.meal === "other" && (
+                <div className="pt-2">
+                  <Input
+                    type="text"
+                    placeholder="请输入具体时间 (如 15:30)"
+                    value={formData.customTime}
+                    onChange={e => setFormData({ ...formData, customTime: e.target.value })}
+                    className="w-full"
+                    required
+                  />
+                </div>
+              )}
             </div>
 
             {/* Optional Image Upload Placeholder */}
