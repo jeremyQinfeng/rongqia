@@ -198,11 +198,9 @@ export function WorkerMenuExecution() {
               className="gap-2 hover:bg-blue-50 hover:border-blue-200"
             >
               <Calendar className="w-4 h-4" />
-              Schedule
             </Button>
             <Button size="sm" onClick={() => setShowAddDish(true)} className="gap-2 bg-green-600 hover:bg-green-700">
               <Plus className="w-4 h-4" />
-              Add Dish
             </Button>
           </div>
         </div>

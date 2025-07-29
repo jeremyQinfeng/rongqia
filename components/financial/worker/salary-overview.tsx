@@ -181,7 +181,6 @@ export function WorkerSalaryOverview() {
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-2xl font-bold text-gray-900">Salary Details</h1>
-        <p className="text-gray-600">View salary breakdown and transaction history</p>
       </div>
 
       {/* Salary Summary - Clickable cards that navigate to detail pages */}
@@ -201,10 +200,8 @@ export function WorkerSalaryOverview() {
                   <div>
                     <p className="text-gray-600 text-sm">Total Salary</p>
                     <p className="text-3xl font-bold text-gray-900">${totalSalary}</p>
-                    <p className="text-gray-500 text-xs mt-1">Total earnings</p>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <DollarSign className="w-12 h-12 text-purple-500" />
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </div>
                 </div>
@@ -218,10 +215,8 @@ export function WorkerSalaryOverview() {
                   <div>
                     <p className="text-gray-600 text-sm">Paid Salary</p>
                     <p className="text-3xl font-bold text-gray-900">${totalPaid}</p>
-                    <p className="text-gray-500 text-xs mt-1">Actually received</p>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <TrendingUp className="w-12 h-12 text-green-500" />
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </div>
                 </div>
@@ -235,10 +230,8 @@ export function WorkerSalaryOverview() {
                   <div>
                     <p className="text-gray-600 text-sm">Loans</p>
                     <p className="text-3xl font-bold text-gray-900">${totalLoan}</p>
-                    <p className="text-gray-500 text-xs mt-1">Amount to repay</p>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <Clock className="w-12 h-12 text-orange-500" />
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </div>
                 </div>
@@ -252,10 +245,8 @@ export function WorkerSalaryOverview() {
                   <div>
                     <p className="text-gray-600 text-sm">Deductions</p>
                     <p className="text-3xl font-bold text-gray-900">${totalDeduction}</p>
-                    <p className="text-gray-500 text-xs mt-1">Total deducted</p>
                   </div>
                   <div className="flex flex-col items-center gap-2">
-                    <TrendingDown className="w-12 h-12 text-red-500" />
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </div>
                 </div>

@@ -7,7 +7,6 @@ export default function WorkerMenuPage() {
   return (
     <div className="pb-20 worker-page">
       <WorkerMenuExecution />
-      <WorkerBottomNavigation />
     </div>
   )
 }

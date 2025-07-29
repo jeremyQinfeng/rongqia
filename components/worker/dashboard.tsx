@@ -84,7 +84,6 @@ export function WorkerDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Worker Dashboard</h1>
-          <p className="text-gray-600">Good morning, Maria! Ready for today's tasks?</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => setShowProfile(true)} className="p-2">
           <Avatar className="w-10 h-10">
@@ -180,13 +179,6 @@ export function WorkerDashboard() {
                   <div className="flex items-center gap-2">
                     <Badge
                       variant={
-                        task.priority === "high" ? "destructive" : task.priority === "medium" ? "default" : "secondary"
-                      }
-                    >
-                      {task.priority}
-                    </Badge>
-                    <Badge
-                      variant={
                         task.status === "completed"
                           ? "default"
                           : task.status === "in-progress"
@@ -205,27 +197,6 @@ export function WorkerDashboard() {
 
         {/* Weekly Progress & Upcoming */}
         <div className="space-y-6">
-          {/* Weekly Progress */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Weekly Progress</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Tasks Completed</span>
-                  <span className="text-sm text-gray-600">
-                    {weeklyProgress.completed}/{weeklyProgress.total}
-                  </span>
-                </div>
-                <Progress value={weeklyProgress.percentage} className="h-3" />
-                <p className="text-sm text-gray-600">
-                  Great job! You're {weeklyProgress.percentage}% done with this week's tasks.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Upcoming Schedule */}
           <Card>
             <CardHeader>
@@ -247,33 +218,6 @@ export function WorkerDashboard() {
           </Card>
         </div>
       </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col gap-2 bg-transparent">
-              <CheckCircle className="w-6 h-6" />
-              <span className="text-sm">Mark Complete</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2 bg-transparent">
-              <Calendar className="w-6 h-6" />
-              <span className="text-sm">View Schedule</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2 bg-transparent">
-              <DollarSign className="w-6 h-6" />
-              <span className="text-sm">Financial Info</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col gap-2 bg-transparent">
-              <Clock className="w-6 h-6" />
-              <span className="text-sm">Time Tracker</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Profile Bottom Sheet */}
       <BottomSheet isOpen={showProfile} onClose={() => setShowProfile(false)}>
