@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, Clock, ChefHat } from "lucide-react"
+import { Plus, Search, Clock, ChefHat, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface Dish {
@@ -139,15 +139,64 @@ export function MenuMain() {
     },
   ]
 
-  const categories = ["all", ...Array.from(new Set(dishes.map((dish) => dish.category)))]
+  const filters = [
+    { key: "all", label: "All Dishes" },
+    { key: "breakfast", label: "早餐" },
+    { key: "lunch", label: "午餐" },
+    { key: "dinner", label: "晚餐" },
+    { key: "other", label: "其他" },
+  ]
 
-  const filteredDishes = dishes.filter((dish) => {
-    const matchesSearch =
-      dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dish.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || dish.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+  // mock: worker assigned/added dishes
+  const assignedDishes = [
+    {
+      id: "w1",
+      name: "番茄炒蛋",
+      description: "Worker 自己添加的番茄炒蛋",
+      image: "/images/dishes/fan-qie-chao-dan.jpeg",
+      meal: "lunch",
+      assignedTo: "Maria Santos",
+      customTime: "",
+    },
+    {
+      id: "w2",
+      name: "白切鸡",
+      description: "分配给worker的白切鸡",
+      image: "/images/dishes/bai-qie-ji.jpeg",
+      meal: "other",
+      assignedTo: "Maria Santos",
+      customTime: "15:30",
+    },
+    {
+      id: "w3",
+      name: "干炒牛河",
+      description: "分配给worker的干炒牛河",
+      image: "/images/dishes/gan-chao-niu-he.webp",
+      meal: "breakfast",
+      assignedTo: "Maria Santos",
+      customTime: "",
+    },
+  ]
+
+  let filteredDishes = []
+  if (selectedCategory === "all") {
+    filteredDishes = dishes.filter((dish) => {
+      const matchesSearch =
+        dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        dish.description.toLowerCase().includes(searchQuery.toLowerCase())
+      return matchesSearch
+    })
+  } else {
+    filteredDishes = assignedDishes.filter((dish) => {
+      const matchesSearch =
+        dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        dish.description.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesMeal = selectedCategory === "other"
+        ? dish.meal === "other"
+        : dish.meal === selectedCategory
+      return matchesSearch && matchesMeal
+    })
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 p-4 pb-20 space-y-6 animate-fade-in">
@@ -182,81 +231,160 @@ export function MenuMain() {
         </CardContent>
       </Card>
 
-      {/* Category Filter */}
+      {/* Filter Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2">
-        {categories.map((category) => (
+        {filters.map((filter) => (
           <Button
-            key={category}
-            variant={selectedCategory === category ? "default" : "outline"}
-            onClick={() => setSelectedCategory(category)}
+            key={filter.key}
+            variant={selectedCategory === filter.key ? "default" : "outline"}
+            onClick={() => setSelectedCategory(filter.key)}
             className={`whitespace-nowrap ${
-              selectedCategory === category
+              selectedCategory === filter.key
                 ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
                 : "hover:bg-orange-50 hover:border-orange-200"
             }`}
           >
-            {category === "all" ? "All Dishes" : category}
+            {filter.label}
           </Button>
         ))}
       </div>
 
-      {/* Dishes Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredDishes.map((dish) => (
-          <Card
-            key={dish.id}
-            className="shadow-xl border-0 bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:scale-105"
-            onClick={() => router.push(`/employer/menu/dish/${dish.id}`)}
-          >
-            <CardContent className="p-0">
-              <div className="relative overflow-hidden rounded-t-xl">
-                <img
-                  src={dish.image || "/placeholder.svg"}
-                  alt={dish.name}
-                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute top-4 right-4">
-                  <Badge className="bg-white/90 text-orange-600 border-0 shadow-lg">
-                    <Clock className="w-3 h-3 mr-1" />
-                    {dish.cookTime}
-                  </Badge>
-                </div>
-              </div>
-
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors duration-200">
-                      {dish.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">{dish.description}</p>
+      {/* Dishes Grid for All Dishes */}
+      {selectedCategory === "all" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {filteredDishes.map((dish) => {
+            const isAssigned = (dish as any).assignedTo !== undefined
+            return (
+              <Card
+                key={dish.id}
+                className="shadow-xl border-0 bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 cursor-pointer group hover:scale-105"
+                onClick={() => router.push(`/employer/menu/dish/${dish.id}`)}
+              >
+                <CardContent className="p-0">
+                  <div className="relative overflow-hidden rounded-t-xl">
+                    <img
+                      src={dish.image || "/placeholder.svg"}
+                      alt={dish.name}
+                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute top-4 right-4">
+                      <Badge className="bg-white/90 text-orange-600 border-0 shadow-lg">
+                        {isAssigned ? (dish as any).customTime || "" : (dish as any).cookTime || ""}
+                      </Badge>
+                    </div>
                   </div>
-                </div>
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors duration-200">
+                          {dish.name}
+                        </h3>
+                        <p className="text-gray-600 text-sm leading-relaxed">{dish.description}</p>
+                      </div>
+                    </div>
+                    {!isAssigned ? (
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-orange-600 border-orange-200">
+                          <ChefHat className="w-3 h-3 mr-1" />
+                          菜品库
+                        </Badge>
+                        <Button
+                          size="sm"
+                          className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            router.push(`/employer/menu/dish/${dish.id}`)
+                          }}
+                        >
+                          View Recipe
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-green-600 border-green-200">
+                          {(dish as any).assignedTo}
+                        </Badge>
+                        <Badge variant="outline" className="text-blue-600 border-blue-200">
+                          {(dish as any).meal === "other" ? (dish as any).customTime : (dish as any).meal}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      )}
 
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="text-orange-600 border-orange-200">
-                    <ChefHat className="w-3 h-3 mr-1" />
-                    {dish.category}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      router.push(`/employer/menu/dish/${dish.id}`)
-                    }}
-                  >
-                    View Recipe
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Assigned Dishes Block for breakfast/lunch/dinner/other */}
+      {selectedCategory !== "all" && (
+        <div className="space-y-4">
+          {assignedDishes.filter((dish) => {
+            // meal筛选
+            return selectedCategory === "other"
+              ? dish.meal === "other"
+              : dish.meal === selectedCategory
+          }).length === 0 ? (
+            <div className="text-center py-12">
+              <ChefHat className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No assigned dishes</h3>
+              <p className="text-gray-500 mb-4">Try assigning dishes from the All Dishes tab</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {assignedDishes.filter((dish) => {
+                return selectedCategory === "other"
+                  ? dish.meal === "other"
+                  : dish.meal === selectedCategory
+              }).map((dish) => (
+                <Card
+                  key={dish.id}
+                  className="shadow-xl border-0 bg-white/90 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 group hover:scale-105"
+                >
+                  <CardContent className="p-0">
+                    <div className="relative overflow-hidden rounded-t-xl">
+                      <img
+                        src={dish.image || "/placeholder.svg"}
+                        alt={dish.name}
+                        className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute top-4 right-4">
+                        <Badge className="bg-white/90 text-orange-600 border-0 shadow-lg">
+                          {dish.meal === "other" ? dish.customTime : dish.meal}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors duration-200">
+                            {dish.name}
+                          </h3>
+                          <p className="text-gray-600 text-sm leading-relaxed">{dish.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <Badge variant="outline" className="text-green-600 border-green-200">
+                          {dish.assignedTo}
+                        </Badge>
+                        <Badge variant="outline" className="text-blue-600 border-blue-200">
+                          {dish.meal === "other" ? dish.customTime : dish.meal}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
-      {filteredDishes.length === 0 && (
+      {/* Empty state for All Dishes */}
+      {selectedCategory === "all" && filteredDishes.length === 0 && (
         <div className="text-center py-12">
           <ChefHat className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No dishes found</h3>

@@ -17,15 +17,12 @@ export function AddDishForm() {
   const [dishData, setDishData] = useState({
     name: "",
     description: "",
-    category: "",
     cookTime: "",
     image: "",
   })
   const [ingredients, setIngredients] = useState<string[]>([""])
   const [instructions, setInstructions] = useState<string[]>([""])
   const [imagePreview, setImagePreview] = useState<string>("")
-
-  const categories = ["Main Course", "Appetizer", "Soup", "Dessert", "Beverage"]
 
   const addIngredient = () => {
     setIngredients([...ingredients, ""])
@@ -74,7 +71,6 @@ export function AddDishForm() {
 
     if (
       dishData.name &&
-      dishData.category &&
       dishData.cookTime &&
       validIngredients.length > 0 &&
       validInstructions.length > 0
@@ -141,36 +137,15 @@ export function AddDishForm() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="dish-category">Category</Label>
-              <Select
-                value={dishData.category}
-                onValueChange={(value) => setDishData({ ...dishData, category: value })}
-              >
-                <SelectTrigger className="focus:scale-105 transition-transform duration-200">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="cook-time">Cook Time</Label>
-              <Input
-                id="cook-time"
-                value={dishData.cookTime}
-                onChange={(e) => setDishData({ ...dishData, cookTime: e.target.value })}
-                placeholder="e.g., 25 mins"
-                className="focus:scale-105 transition-transform duration-200"
-              />
-            </div>
+          <div>
+            <Label htmlFor="cook-time">Cook Time</Label>
+            <Input
+              id="cook-time"
+              value={dishData.cookTime}
+              onChange={(e) => setDishData({ ...dishData, cookTime: e.target.value })}
+              placeholder="e.g., 25 mins"
+              className="focus:scale-105 transition-transform duration-200"
+            />
           </div>
         </CardContent>
       </Card>
@@ -335,7 +310,6 @@ export function AddDishForm() {
           onClick={handleSubmit}
           disabled={
             !dishData.name ||
-            !dishData.category ||
             !dishData.cookTime ||
             ingredients.filter((ing) => ing.trim() !== "").length === 0 ||
             instructions.filter((inst) => inst.trim() !== "").length === 0

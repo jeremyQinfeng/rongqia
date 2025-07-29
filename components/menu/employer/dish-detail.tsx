@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Clock, Users, ChefHat, Plus } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 
 interface DishDetailProps {
   dishId: string
@@ -14,6 +17,12 @@ interface DishDetailProps {
 export function DishDetail({ dishId }: DishDetailProps) {
   const router = useRouter()
   const [selectedMealTime, setSelectedMealTime] = useState<string>("")
+  const [customTime, setCustomTime] = useState("")
+  const [showCustomTime, setShowCustomTime] = useState(false)
+  const [selectedWorker, setSelectedWorker] = useState("1")
+  const workers = [
+    { id: "1", name: "Maria Santos" },
+  ]
 
   // Mock data - in real app, this would be fetched based on dishId
   const dish = {
@@ -52,8 +61,10 @@ export function DishDetail({ dishId }: DishDetailProps) {
   ]
 
   const handleAddToMenu = () => {
-    if (selectedMealTime) {
-      console.log(`Adding ${dish.name} to ${selectedMealTime}`)
+    const meal = showCustomTime ? "other" : selectedMealTime
+    const time = showCustomTime ? customTime : undefined
+    if (meal && (meal !== "other" || (meal === "other" && customTime.trim()))) {
+      console.log(`Assign ${dish.name} to worker ${selectedWorker} at ${meal}${meal === "other" ? ` (${customTime})` : ""}`)
       // Here you would typically save to menu/schedule
       router.back()
     }
@@ -139,10 +150,10 @@ export function DishDetail({ dishId }: DishDetailProps) {
               {mealTimes.map((mealTime, index) => (
                 <Button
                   key={mealTime.id}
-                  variant={selectedMealTime === mealTime.id ? "default" : "outline"}
-                  onClick={() => setSelectedMealTime(mealTime.id)}
+                  variant={selectedMealTime === mealTime.id && !showCustomTime ? "default" : "outline"}
+                  onClick={() => { setSelectedMealTime(mealTime.id); setShowCustomTime(false) }}
                   className={`h-16 justify-start text-left animate-fade-in-right ${
-                    selectedMealTime === mealTime.id
+                    selectedMealTime === mealTime.id && !showCustomTime
                       ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
                       : "hover:bg-orange-50 hover:border-orange-200"
                   }`}
@@ -153,7 +164,7 @@ export function DishDetail({ dishId }: DishDetailProps) {
                     <div className="flex-1">
                       <div className="font-semibold text-lg">{mealTime.label}</div>
                       <div
-                        className={`text-sm ${selectedMealTime === mealTime.id ? "text-white/80" : "text-gray-500"}`}
+                        className={`text-sm ${selectedMealTime === mealTime.id && !showCustomTime ? "text-white/80" : "text-gray-500"}`}
                       >
                         {mealTime.time}
                       </div>
@@ -161,7 +172,53 @@ export function DishDetail({ dishId }: DishDetailProps) {
                   </div>
                 </Button>
               ))}
+              <Button
+                variant={showCustomTime ? "default" : "outline"}
+                onClick={() => { setShowCustomTime(true); setSelectedMealTime("") }}
+                className={`h-16 justify-start text-left animate-fade-in-right ${showCustomTime ? "bg-gradient-to-r from-green-500 to-blue-500 text-white" : "hover:bg-green-50 hover:border-green-200"}`}
+                style={{ animationDelay: `${mealTimes.length * 100}ms` }}
+              >
+                <div className="flex items-center gap-4 w-full">
+                  <span className="text-2xl">⏰</span>
+                  <div className="flex-1">
+                    <div className="font-semibold text-lg">其他（自定义时间）</div>
+                    <div className={`text-sm ${showCustomTime ? "text-white/80" : "text-gray-500"}`}>自定义具体时间</div>
+                  </div>
+                </div>
+              </Button>
+              {showCustomTime && (
+                <div className="pt-2">
+                  <Input
+                    type="text"
+                    placeholder="请输入具体时间 (如 15:30)"
+                    value={customTime}
+                    onChange={e => setCustomTime(e.target.value)}
+                    className="w-full"
+                    required
+                  />
+                </div>
+              )}
             </div>
+            <div className="mt-6">
+              <Label className="block mb-2">分配给工人</Label>
+              <Select value={selectedWorker} onValueChange={setSelectedWorker}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="选择工人" />
+                </SelectTrigger>
+                <SelectContent>
+                  {workers.map(worker => (
+                    <SelectItem key={worker.id} value={worker.id}>{worker.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              className="mt-6 w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white text-lg font-semibold py-3"
+              onClick={handleAddToMenu}
+             disabled={(!selectedMealTime && !showCustomTime) || (showCustomTime && !customTime.trim())}
+            >
+              Assign to Menu
+            </Button>
           </CardContent>
         </Card>
 
