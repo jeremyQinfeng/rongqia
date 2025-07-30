@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, Clock, ChefHat, Users } from "lucide-react"
+import { Plus, Search, Clock, ChefHat, Users, Calendar, X } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 interface Dish {
   id: string
@@ -23,6 +24,22 @@ export function MenuMain() {
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [showDatePicker, setShowDatePicker] = useState(false)
+
+  // Auto-select meal based on current time
+  useEffect(() => {
+    const now = new Date()
+    const currentHour = now.getHours()
+    
+    if (currentHour >= 17 && currentHour < 20) {
+      setSelectedCategory("dinner")
+    } else if (currentHour >= 11 && currentHour < 14) {
+      setSelectedCategory("lunch")
+    } else {
+      setSelectedCategory("breakfast")
+    }
+  }, [])
 
   const dishes: Dish[] = [
     {
@@ -140,7 +157,6 @@ export function MenuMain() {
   ]
 
   const filters = [
-    { key: "all", label: "All Dishes" },
     { key: "breakfast", label: "早餐" },
     { key: "lunch", label: "午餐" },
     { key: "dinner", label: "晚餐" },
@@ -198,6 +214,19 @@ export function MenuMain() {
     })
   }
 
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    })
+  }
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date)
+    setShowDatePicker(false)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 p-4 pb-20 space-y-6 animate-fade-in">
       {/* Header */}
@@ -208,12 +237,25 @@ export function MenuMain() {
           </h1>
           <p className="text-gray-500"></p>
         </div>
-        <Button
-          className="gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg"
-          onClick={() => router.push("/employer/menu/add-dish")}
-        >
-          <Plus className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={selectedCategory === "all" ? "default" : "outline"}
+            onClick={() => setSelectedCategory("all")}
+            className={`whitespace-nowrap ${
+              selectedCategory === "all"
+                ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                : "hover:bg-orange-50 hover:border-orange-200"
+            }`}
+          >
+            All Dishes
+          </Button>
+          <Button
+            className="gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg"
+            onClick={() => router.push("/employer/menu/add-dish")}
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -247,6 +289,18 @@ export function MenuMain() {
             {filter.label}
           </Button>
         ))}
+      </div>
+
+      {/* Date Selection */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          className="gap-2 hover:bg-orange-50 hover:border-orange-200"
+          onClick={() => setShowDatePicker(true)}
+        >
+          <Calendar className="w-4 h-4" />
+          {formatDate(selectedDate)}
+        </Button>
       </div>
 
       {/* Dishes Grid for All Dishes */}
@@ -402,6 +456,26 @@ export function MenuMain() {
               Add Your First Dish
             </Button>
           )}
+        </div>
+      )}
+
+      {/* Date Picker Modal */}
+      {showDatePicker && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Select Date</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowDatePicker(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <Input
+              type="date"
+              value={selectedDate.toISOString().split("T")[0]}
+              onChange={(e) => handleDateSelect(new Date(e.target.value))}
+              className="w-full"
+            />
+          </div>
         </div>
       )}
     </div>

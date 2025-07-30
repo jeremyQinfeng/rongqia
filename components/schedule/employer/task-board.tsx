@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Target, Users, Filter, BookOpen } from "lucide-react"
+import { Plus, Target, Users, Filter, BookOpen, Calendar, X } from "lucide-react"
 import { BottomSheet } from "@/components/ui/bottom-sheet"
 import { useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 interface Task {
   id: string
@@ -27,6 +28,7 @@ interface Task {
   category: string
   startTime: string
   endTime: string
+  color: string
 }
 
 interface Worker {
@@ -42,6 +44,15 @@ export function EmployerTaskBoard() {
   const [showAddTask, setShowAddTask] = useState(false)
   const [selectedFilter, setSelectedFilter] = useState<"all" | "pending" | "in-progress" | "completed">("all")
   const [selectedWorker, setSelectedWorker] = useState<string>("all")
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    const today = new Date()
+    const dayOfWeek = today.getDay()
+    const start = new Date(today)
+    start.setDate(today.getDate() - dayOfWeek)
+    return start
+  })
+  const [showDatePicker, setShowDatePicker] = useState(false)
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -77,6 +88,7 @@ export function EmployerTaskBoard() {
       category: "Cleaning",
       startTime: "09:00",
       endTime: "11:00",
+      color: "bg-blue-400",
     },
     {
       id: "2",
@@ -92,6 +104,7 @@ export function EmployerTaskBoard() {
       category: "Laundry",
       startTime: "11:30",
       endTime: "13:00",
+      color: "bg-green-400",
     },
     {
       id: "3",
@@ -107,6 +120,7 @@ export function EmployerTaskBoard() {
       category: "Cleaning",
       startTime: "14:00",
       endTime: "17:00",
+      color: "bg-purple-400",
     },
     {
       id: "4",
@@ -122,8 +136,52 @@ export function EmployerTaskBoard() {
       category: "Shopping",
       startTime: "17:00",
       endTime: "19:00",
+      color: "bg-orange-400",
     },
   ]
+
+  // Generate time slots every 30 minutes from 00:00 to 23:30
+  const timeSlots = Array.from({ length: 48 }, (_, i) => {
+    const hour = Math.floor(i / 2)
+      .toString()
+      .padStart(2, "0")
+    const minute = (i % 2) * 30
+    const minuteStr = minute.toString().padStart(2, "0")
+    return `${hour}:${minuteStr}`
+  })
+
+  // Generate week days
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(currentWeekStart)
+    date.setDate(currentWeekStart.getDate() + i)
+    return date
+  })
+
+  const dayNames = ["日", "一", "二", "三", "四", "五", "六"]
+
+  const formatDate = (date: Date) => {
+    const monthNames = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"]
+    return `${date.getFullYear()}年${monthNames[date.getMonth()]}${date.getDate()}日 週${dayNames[date.getDay()]}`
+  }
+
+  const isToday = (date: Date) => {
+    const today = new Date()
+    return date.toDateString() === today.toDateString()
+  }
+
+  const isSelected = (date: Date) => {
+    return date.toDateString() === selectedDate.toDateString()
+  }
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date)
+    // Update week view to include selected date
+    const dayOfWeek = date.getDay()
+    const weekStart = new Date(date)
+    weekStart.setDate(date.getDate() - dayOfWeek)
+    setCurrentWeekStart(weekStart)
+    setShowDatePicker(false)
+  }
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -195,6 +253,43 @@ export function EmployerTaskBoard() {
     return { pending, inProgress, completed, highPriority }
   }
 
+  const parseTimeToMinutes = (timeStr: string) => {
+    const [hours, minutes] = timeStr.split(":").map(Number)
+    return hours * 60 + minutes
+  }
+
+  const getTasksForTimeSlot = (timeSlot: string, date: Date) => {
+    const dateStr = date.toISOString().split("T")[0]
+    const slotMinutes = parseTimeToMinutes(timeSlot)
+
+    return tasks.filter((task) => {
+      if (task.dueDate !== dateStr) return false
+
+      const startMinutes = parseTimeToMinutes(task.startTime)
+      const endMinutes = parseTimeToMinutes(task.endTime)
+
+      return slotMinutes >= startMinutes && slotMinutes < endMinutes
+    })
+  }
+
+  const getTaskStartingAtSlot = (timeSlot: string, date: Date) => {
+    const dateStr = date.toISOString().split("T")[0]
+    return tasks.find((task) => task.dueDate === dateStr && task.startTime === timeSlot)
+  }
+
+  const getTaskHeight = (task: Task) => {
+    const startMinutes = parseTimeToMinutes(task.startTime)
+    const endMinutes = parseTimeToMinutes(task.endTime)
+    const durationMinutes = endMinutes - startMinutes
+    // Each 30-minute slot is 32px high, so calculate proportionally
+    return (durationMinutes / 30) * 32
+  }
+
+  // Check if this is an hour slot (00:00, 01:00, etc.) for styling
+  const isHourSlot = (timeSlot: string) => {
+    return timeSlot.endsWith(":00")
+  }
+
   const stats = getTaskStats()
 
   return (
@@ -223,50 +318,6 @@ export function EmployerTaskBoard() {
         </div>
       </div>
 
-      {/* Filters - Small Block */}
-      <Card className="shadow-lg border-0 bg-white/60 backdrop-blur-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Filter className="w-5 h-5 text-purple-500" />
-            Filter Tasks
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Status</Label>
-              <Select value={selectedFilter} onValueChange={(value: any) => setSelectedFilter(value)}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Tasks</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Worker</Label>
-              <Select value={selectedWorker} onValueChange={setSelectedWorker}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Workers</SelectItem>
-                  {workers.map((worker) => (
-                    <SelectItem key={worker.id} value={worker.id}>
-                      {worker.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Worker Status Overview - Main Content */}
       <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-4">
@@ -274,14 +325,47 @@ export function EmployerTaskBoard() {
             <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
               <Users className="w-5 h-5 text-white" />
             </div>
-            Worker Status Overview
+            Worker Overview
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Worker Selection */}
+          <div className="mb-4">
+            <Label className="text-sm font-medium text-gray-700 mb-2 block">Filter by Worker</Label>
+            <Select value={selectedWorker} onValueChange={setSelectedWorker}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Workers" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Workers</SelectItem>
+                {workers.map((worker) => (
+                  <SelectItem key={worker.id} value={worker.id}>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="w-6 h-6">
+                        <AvatarImage src={worker.avatar || "/placeholder.svg"} />
+                        <AvatarFallback className="text-xs">
+                          {worker.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      {worker.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Worker Cards */}
           {workers.map((worker) => (
             <div
               key={worker.id}
-              className="p-4 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-100 hover:shadow-md transition-all duration-200"
+              className={cn(
+                "p-4 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-100 hover:shadow-md transition-all duration-200",
+                selectedWorker === "all" || selectedWorker === worker.id ? "opacity-100" : "opacity-50"
+              )}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -310,41 +394,147 @@ export function EmployerTaskBoard() {
         </CardContent>
       </Card>
 
-      {/* Task List - Main Content */}
+      {/* Calendar View */}
       <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="text-xl flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-              <Target className="w-5 h-5 text-white" />
-            </div>
-            Task List ({filteredTasks.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {filteredTasks.map((task) => (
-            <div
-              key={task.id}
-              className="p-4 bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-100 hover:shadow-md transition-all duration-200"
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              Task Schedule ({filteredTasks.length})
+            </CardTitle>
+            <Button
+              variant="outline"
+              className="gap-2 hover:bg-purple-50 hover:border-purple-200"
+              onClick={() => setShowDatePicker(true)}
             >
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-gray-900">{task.title}</h3>
+              <Calendar className="w-4 h-4" />
+              {selectedDate.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Week View Header */}
+          <div className="grid grid-cols-7 gap-1 mb-4">
+            {weekDays.map((date, index) => (
+              <div key={index} className="text-center">
+                <div className="text-xs text-gray-600 mb-1">{dayNames[index]}</div>
+                <button
+                  onClick={() => handleDateSelect(date)}
+                  className={cn(
+                    "w-8 h-8 rounded-full text-sm font-medium transition-colors",
+                    isSelected(date)
+                      ? "bg-black text-white"
+                      : isToday(date)
+                        ? "text-red-500 underline"
+                        : "text-gray-900 hover:bg-gray-100",
+                  )}
+                >
+                  {date.getDate()}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar Grid */}
+          <div className="relative">
+            {/* Time Column and Schedule Area */}
+            <div className="flex">
+              <div className="w-16 bg-white border-r border-gray-200 relative">
+                {/* Time labels positioned at the edges */}
+                {timeSlots.map((timeSlot, index) => (
+                  <div key={timeSlot} className="relative">
+                    <div
+                      className={cn("h-8", isHourSlot(timeSlot) ? "border-b border-gray-200" : "border-b border-gray-100")}
+                    />
+                    {isHourSlot(timeSlot) && (
+                      <div className="absolute -top-2 right-2 text-xs text-gray-500 font-medium bg-white px-1">
+                        {timeSlot}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-                  <div className="flex items-center gap-4 text-xs text-gray-500"></div>
-                </div>
-                <div className="text-right mt-2 md:mt-0 md:ml-4">
-                  <p className="text-xs text-gray-500">Due: {new Date(task.dueDate).toLocaleDateString()}</p>
-                  <p className="text-xs text-gray-500">
-                    Time: {task.startTime} - {task.endTime}
-                  </p>
-                </div>
+                ))}
+              </div>
+
+              {/* Schedule Area */}
+              <div className="flex-1 relative">
+                {timeSlots.map((timeSlot, index) => {
+                  const tasksInSlot = getTasksForTimeSlot(timeSlot, selectedDate)
+                  const taskStartingHere = getTaskStartingAtSlot(timeSlot, selectedDate)
+
+                  return (
+                    <div
+                      key={timeSlot}
+                      className={cn(
+                        "h-8 relative",
+                        isHourSlot(timeSlot) ? "border-b border-gray-200" : "border-b border-gray-100",
+                      )}
+                    >
+                      {taskStartingHere && (
+                        <div
+                          className={cn(
+                            "absolute left-2 right-2 rounded-lg p-2 text-white text-sm font-medium shadow-sm z-10",
+                            taskStartingHere.color,
+                          )}
+                          style={{
+                            height: `${getTaskHeight(taskStartingHere)}px`,
+                          }}
+                        >
+                          <div className="flex items-center gap-1 mb-1">
+                            <div className="w-1 h-1 bg-white rounded-full"></div>
+                            <span className="text-xs opacity-90">
+                              {taskStartingHere.startTime} - {taskStartingHere.endTime}
+                            </span>
+                          </div>
+                          <div className="font-medium text-xs leading-tight">{taskStartingHere.title}</div>
+                          <div className="text-xs opacity-90 mt-1">{taskStartingHere.assignedToName}</div>
+                        </div>
+                      )}
+
+                      {tasksInSlot.length > 0 && !taskStartingHere && (
+                        <div className="absolute left-2 right-2 top-0 bottom-0">
+                          {tasksInSlot.map((task) => (
+                            <div
+                              key={task.id}
+                              className={cn("absolute left-0 right-0 opacity-60 rounded", task.color)}
+                              style={{ height: "100%" }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
-          ))}
+          </div>
         </CardContent>
       </Card>
+
+      {/* Date Picker Modal */}
+      {showDatePicker && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Select Date</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowDatePicker(false)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <Input
+              type="date"
+              value={selectedDate.toISOString().split("T")[0]}
+              onChange={(e) => handleDateSelect(new Date(e.target.value))}
+              className="w-full"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Add Task Bottom Sheet */}
       <BottomSheet isOpen={showAddTask} onClose={() => setShowAddTask(false)} title="Add New Task">
